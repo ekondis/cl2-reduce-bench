@@ -1,0 +1,45 @@
+Workgroup and subworkgroup OpenCL 2.0 function evaluation test case
+Platform/Device selection
+Total platforms: 4
+1. AMD Accelerated Parallel Processing
+        1. Intel(R) Core(TM) i5-2500 CPU @ 3.30GHz/GenuineIntel
+2. NVIDIA CUDA
+        1. GeForce GTX 660/NVIDIA Corporation
+3. Intel(R) OpenCL
+        1. Intel(R) Core(TM) i5-2500 CPU @ 3.30GHz/Intel(R) Corporation
+4. Experimental OpenCL 2.0 CPU Only Platform
+        1. Intel(R) Core(TM) i5-2500 CPU @ 3.30GHz/Intel(R) Corporation
+Select platform index: 4
+
+Device info
+Platform:       Experimental OpenCL 2.0 CPU Only Platform
+Device:         Intel(R) Core(TM) i5-2500 CPU @ 3.30GHz
+Driver version: 4.6.0.92
+OpenCL version: OpenCL 2.0 (Build 99)
+Great! OpenCL 2.0 is supported :)
+Building kernel with options "-cl-std=CL2.0 -cl-uniform-work-group-size -DK3"
+Build log:
+ ********************
+Compilation started
+Compilation done
+Linking started
+Linking done
+Device build started
+Device build done
+Kernel <reductionShmem> was successfully vectorized
+Kernel <reductionWkgrp> was successfully vectorized
+Done.
+ ********************
+
+1. Shared memory kernel
+Executing...Done!
+Output: 2147450880 in 0.179529 msecs
+PASSED!
+
+2. Hybrid kernel via subgroup functions
+Subgroups not supported. Skipping kernel 2.
+
+3. Workgroup function kernel
+Executing...Done!
+Output: 2147450880 in 0.026574 msecs (relative speed-up to kernel 1: 6.75581)
+PASSED!

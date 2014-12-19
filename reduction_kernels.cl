@@ -49,7 +49,7 @@ __kernel void reductionSubgrp(__local volatile uint *localBuffer, __global uint 
 		barrier(CLK_LOCAL_MEM_FENCE);
 	}
 
-	// subgroup reduction
+	// subgroup reduction (introduced in OpenCL 2.0)
 	if(lid < i)
 		res = sub_group_reduce_add(res + localBuffer[lid + i]);
 
