@@ -67,8 +67,32 @@ double executeKernel(const cl::CommandQueue &queue, const cl::Kernel &kernel, co
 	return (infFinish-infStart)/1000000.0;
 }
 
+cl_uint readBufferData(cl::CommandQueue queue, cl::Buffer buffer){
+	cl_uint *map = (cl_uint*)queue.enqueueMapBuffer(buffer, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_uint));
+	cl_uint result = map[0];
+	queue.enqueueUnmapMemObject(buffer, map);
+	return result;
+}
+
+void writeBufferData(cl::CommandQueue queue, cl::Buffer buffer, cl_uint value){
+	cl_uint *map = (cl_uint*)queue.enqueueMapBuffer(buffer, CL_TRUE, CL_MAP_WRITE, 0, sizeof(cl_uint));
+	map[0] = value;
+	queue.enqueueUnmapMemObject(buffer, map);
+}
+
+void verifyResult(cl_uint result, unsigned int validResult){
+	if( result == validResult )
+		std::cout << "PASSED!" << std::endl;
+	else
+		std::cout << "FAILED (" << result << "!=" << validResult << ")!" << std::endl;
+}
+
+void outputInfo(unsigned int result, double elapsedTime, int workitems){
+	std::cout << "Output: " << result << " / Time: " << elapsedTime << " msecs (" << (workitems/elapsedTime/1000000.0) << " billion elements/second)" << std::endl;
+}
+
 int main(void) {  
-	std::cout << "Workgroup and subworkgroup OpenCL 2.0 function evaluation test case" << std::endl;
+	std::cout << "Workgroup and sub-workgroup OpenCL 2.0 function evaluation test case" << std::endl;
 	cl::Platform pl;
 	cl::Device dev;
 	selectPlatformDevice(pl, dev);
@@ -159,9 +183,7 @@ int main(void) {
 	cl::Event eKernel;
 
 	//	Initialize result buffer
-	cl_uint* map = (cl_uint*)queue.enqueueMapBuffer(buff, CL_TRUE, CL_MAP_WRITE, 0, sizeof(cl_uint));
-	map[0] = 0;
-	queue.enqueueUnmapMemObject(buff, map);
+	writeBufferData(queue, buff, 0);
 //	std::cout << "NDRange size " << globalSize[0] << std::endl;
 
 	// Precalc correct result
@@ -174,29 +196,20 @@ int main(void) {
 	// Shared memory kernel
 	std::cout << std::endl << "1. Shared memory kernel" << std::endl;
 	double elapsedTime1 = executeKernel(queue, kernel1, globalSize, localSize);
-	/*std::cout << "Executing...";
-	queue.enqueueNDRangeKernel(kernel1, cl::NullRange, globalSize, localSize, NULL, &eKernel);
-	queue.finish();
-	std::cout << "Done!" << std::endl;
-	auto infStart = eKernel.getProfilingInfo<CL_PROFILING_COMMAND_START>();
-	auto infFinish = eKernel.getProfilingInfo<CL_PROFILING_COMMAND_END>();
-	double elapsedTime1 = (infFinish-infStart)/1000000.0;*/
+
 	// Verify result
-	map = (cl_uint*)queue.enqueueMapBuffer(buff, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_uint));
-	std::cout << "Output: " << map[0] << " in " << elapsedTime1 << " msecs" << std::endl;
-	if( map[0] == validResult )
-		std::cout << "PASSED!" << std::endl;
-	else
-		std::cout << "FAILED (" << map[0] << "!=" << validResult << ")!" << std::endl;
-	queue.enqueueUnmapMemObject(buff, map);  
+	cl_uint result = readBufferData(queue, buff);
+	outputInfo(result, elapsedTime1, globalSize[0]);
+	verifyResult(result, validResult);
 
 	// Subgroup function kernel
 	std::cout << std::endl << "2. Hybrid kernel via subgroup functions" << std::endl;
 	if( cl_subgroups ){
 		cl::Kernel kernel2(program, "reductionSubgrp");
-		map = (cl_uint*)queue.enqueueMapBuffer(buff, CL_TRUE, CL_MAP_WRITE, 0, sizeof(cl_uint));
+		writeBufferData(queue, buff, 0);
+/*		map = (cl_uint*)queue.enqueueMapBuffer(buff, CL_TRUE, CL_MAP_WRITE, 0, sizeof(cl_uint));
 		map[0] = 0;
-		queue.enqueueUnmapMemObject(buff, map);
+		queue.enqueueUnmapMemObject(buff, map);*/
 		kernel2.setArg(0, localSize[0]*sizeof(cl_uint), NULL);
 		kernel2.setArg(1, buff);
 
@@ -209,13 +222,10 @@ int main(void) {
 		auto infFinish = eKernel.getProfilingInfo<CL_PROFILING_COMMAND_END>();
 		double elapsedTime2 = (infFinish-infStart)/1000000.0;*/
 
-		map = (cl_uint*)queue.enqueueMapBuffer(buff, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_uint));
-		std::cout << "Output: " << map[0] << " in " << elapsedTime2 << " msecs (relative speed-up to kernel 1: " << elapsedTime1/elapsedTime2 << ")" << std::endl;
-		if( map[0] == validResult )
-			std::cout << "PASSED!" << std::endl;
-		else
-			std::cout << "FAILED (" << map[0] << "!=" << validResult << ")!" << std::endl;
-		queue.enqueueUnmapMemObject(buff, map);  
+		cl_uint result = readBufferData(queue, buff);
+		outputInfo(result, elapsedTime2, globalSize[0]);
+		std::cout << "Relative speed-up to kernel 1: " << elapsedTime1/elapsedTime2 << std::endl;
+		verifyResult(result, validResult);
 	} else
 		std::cout << "Subgroups not supported. Skipping kernel 2." << std::endl;
 
@@ -223,9 +233,10 @@ int main(void) {
 	std::cout << std::endl << "3. Workgroup function kernel" << std::endl;
 	if( cl_ver20 ){
 		cl::Kernel kernel3(program, "reductionWkgrp");
-		map = (cl_uint*)queue.enqueueMapBuffer(buff, CL_TRUE, CL_MAP_WRITE, 0, sizeof(cl_uint));
+		writeBufferData(queue, buff, 0);
+/*		map = (cl_uint*)queue.enqueueMapBuffer(buff, CL_TRUE, CL_MAP_WRITE, 0, sizeof(cl_uint));
 		map[0] = 0;
-		queue.enqueueUnmapMemObject(buff, map);
+		queue.enqueueUnmapMemObject(buff, map);*/
 		kernel3.setArg(0, buff);
 
 		double elapsedTime3 = executeKernel(queue, kernel3, globalSize, localSize);
@@ -237,13 +248,10 @@ int main(void) {
 		auto infFinish = eKernel.getProfilingInfo<CL_PROFILING_COMMAND_END>();
 		double elapsedTime3 = (infFinish-infStart)/1000000.0;*/
 
-		map = (cl_uint*)queue.enqueueMapBuffer(buff, CL_TRUE, CL_MAP_READ, 0, sizeof(cl_uint));
-		std::cout << "Output: " << map[0] << " in " << elapsedTime3 << " msecs (relative speed-up to kernel 1: " << elapsedTime1/elapsedTime3 << ")" << std::endl;
-		if( map[0] == validResult )
-			std::cout << "PASSED!" << std::endl;
-		else
-			std::cout << "FAILED (" << map[0] << "!=" << validResult << ")!" << std::endl;
-		queue.enqueueUnmapMemObject(buff, map);  
+		cl_uint result = readBufferData(queue, buff);
+		outputInfo(result, elapsedTime3, globalSize[0]);
+		std::cout << "Relative speed-up to kernel 1: " << elapsedTime1/elapsedTime3 << std::endl;
+		verifyResult(result, validResult);
 	} else
 		std::cout << "OpenCL 2.0 is not supported. Skipping kernel 3." << std::endl;
 
