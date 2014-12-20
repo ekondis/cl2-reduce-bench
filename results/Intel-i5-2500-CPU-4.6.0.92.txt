@@ -1,4 +1,4 @@
-Workgroup and subworkgroup OpenCL 2.0 function evaluation test case
+Workgroup and sub-workgroup OpenCL 2.0 function evaluation test case
 Platform/Device selection
 Total platforms: 4
 1. AMD Accelerated Parallel Processing
@@ -31,9 +31,9 @@ Kernel <reductionWkgrp> was successfully vectorized
 Done.
  ********************
 
-1. Shared memory kernel
+1. Shared memory only kernel
 Executing...Done!
-Output: 2147450880 in 0.179529 msecs
+Output: 2147450880 / Time: 0.220317 msecs (0.297462 billion elements/second)
 PASSED!
 
 2. Hybrid kernel via subgroup functions
@@ -41,5 +41,6 @@ Subgroups not supported. Skipping kernel 2.
 
 3. Workgroup function kernel
 Executing...Done!
-Output: 2147450880 in 0.026574 msecs (relative speed-up to kernel 1: 6.75581)
+Output: 2147450880 / Time: 0.03399 msecs (1.9281 billion elements/second)
+Relative speed-up to kernel 1: 6.48182
 PASSED!
