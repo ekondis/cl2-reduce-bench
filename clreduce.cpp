@@ -99,7 +99,6 @@ int main(void) {
 
 	cl_device_type devType;
 	dev.getInfo(CL_DEVICE_TYPE, &devType);
-//	std::cout << "Type: " << devType << std::endl;
 
 	std::cout << std::endl << "Device info"<< std::endl;
 	int wavefront_size=1;
@@ -207,20 +206,10 @@ int main(void) {
 	if( cl_subgroups ){
 		cl::Kernel kernel2(program, "reductionSubgrp");
 		writeBufferData(queue, buff, 0);
-/*		map = (cl_uint*)queue.enqueueMapBuffer(buff, CL_TRUE, CL_MAP_WRITE, 0, sizeof(cl_uint));
-		map[0] = 0;
-		queue.enqueueUnmapMemObject(buff, map);*/
+
 		kernel2.setArg(0, localSize[0]*sizeof(cl_uint), NULL);
 		kernel2.setArg(1, buff);
-
 		double elapsedTime2 = executeKernel(queue, kernel2, globalSize, localSize);
-/*		std::cout << "Executing...";
-		queue.enqueueNDRangeKernel(kernel2, cl::NullRange, globalSize, localSize, NULL, &eKernel);
-		queue.finish();
-		std::cout << "Done!" << std::endl;
-		auto infStart = eKernel.getProfilingInfo<CL_PROFILING_COMMAND_START>();
-		auto infFinish = eKernel.getProfilingInfo<CL_PROFILING_COMMAND_END>();
-		double elapsedTime2 = (infFinish-infStart)/1000000.0;*/
 
 		cl_uint result = readBufferData(queue, buff);
 		outputInfo(result, elapsedTime2, globalSize[0]);
@@ -234,19 +223,9 @@ int main(void) {
 	if( cl_ver20 ){
 		cl::Kernel kernel3(program, "reductionWkgrp");
 		writeBufferData(queue, buff, 0);
-/*		map = (cl_uint*)queue.enqueueMapBuffer(buff, CL_TRUE, CL_MAP_WRITE, 0, sizeof(cl_uint));
-		map[0] = 0;
-		queue.enqueueUnmapMemObject(buff, map);*/
-		kernel3.setArg(0, buff);
 
+		kernel3.setArg(0, buff);
 		double elapsedTime3 = executeKernel(queue, kernel3, globalSize, localSize);
-/*		std::cout << "Executing...";
-		queue.enqueueNDRangeKernel(kernel3, cl::NullRange, globalSize, localSize, NULL, &eKernel);
-		queue.finish();
-		std::cout << "Done!" << std::endl;
-		auto infStart = eKernel.getProfilingInfo<CL_PROFILING_COMMAND_START>();
-		auto infFinish = eKernel.getProfilingInfo<CL_PROFILING_COMMAND_END>();
-		double elapsedTime3 = (infFinish-infStart)/1000000.0;*/
 
 		cl_uint result = readBufferData(queue, buff);
 		outputInfo(result, elapsedTime3, globalSize[0]);
