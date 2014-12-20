@@ -1,4 +1,5 @@
 #define __CL_ENABLE_EXCEPTIONS
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 #include <iostream>
 #include <fstream>
@@ -193,7 +194,7 @@ int main(void) {
 	kernel1.setArg(1, buff);
 
 	// Shared memory kernel
-	std::cout << std::endl << "1. Shared memory kernel" << std::endl;
+	std::cout << std::endl << "1. Shared memory only kernel" << std::endl;
 	double elapsedTime1 = executeKernel(queue, kernel1, globalSize, localSize);
 
 	// Verify result
