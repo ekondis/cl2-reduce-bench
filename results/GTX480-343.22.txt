@@ -1,0 +1,31 @@
+Workgroup and sub-workgroup OpenCL 2.0 function evaluation test case
+Platform/Device selection
+Total platforms: 2
+1. NVIDIA CUDA
+	1. GeForce GTX 480/NVIDIA Corporation
+2. AMD Accelerated Parallel Processing
+	1. AMD Athlon(tm) 64 X2 Dual Core Processor 4400+/AuthenticAMD
+Select platform index: 
+Device info
+Platform:       NVIDIA CUDA
+Device:         GeForce GTX 480
+Driver version: 343.22
+OpenCL version: OpenCL 1.1 CUDA
+Using OpenCL 1.1
+Building kernel with options "-cl-std=CL1.1 -DWAVEFRONT_SIZE=32"
+Build log:
+ ******************** 
+
+
+ ******************** 
+
+1. Shared memory only kernel
+Executing...Done!
+Output: 2147450880 / Time: 0.038048 msecs (1.72246 billion elements/second)
+PASSED!
+
+2. Hybrid kernel via subgroup functions
+Subgroups not supported. Skipping kernel 2.
+
+3. Workgroup function kernel
+OpenCL 2.0 is not supported. Skipping kernel 3.
