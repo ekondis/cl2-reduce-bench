@@ -214,7 +214,7 @@ int main(void) {
 
 		cl_uint result = readBufferData(queue, buff);
 		outputInfo(result, elapsedTime2, globalSize[0]);
-		std::cout << "Relative speed-up to kernel 1: " << elapsedTime1/elapsedTime2 << std::endl;
+		std::cout << "Relative speed-up with respect to kernel 1: " << elapsedTime1/elapsedTime2 << std::endl;
 		verifyResult(result, validResult);
 	} else
 		std::cout << "Subgroups not supported. Skipping kernel 2." << std::endl;
@@ -230,7 +230,7 @@ int main(void) {
 
 		cl_uint result = readBufferData(queue, buff);
 		outputInfo(result, elapsedTime3, globalSize[0]);
-		std::cout << "Relative speed-up to kernel 1: " << elapsedTime1/elapsedTime3 << std::endl;
+		std::cout << "Relative speed-up with respect to kernel 1: " << elapsedTime1/elapsedTime3 << std::endl;
 		verifyResult(result, validResult);
 	} else
 		std::cout << "OpenCL 2.0 is not supported. Skipping kernel 3." << std::endl;
