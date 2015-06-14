@@ -1,0 +1,25 @@
+Workgroup and sub-workgroup OpenCL 2.0 function evaluation test case
+Platform/Device selection
+Total platforms: 1
+AMD Accelerated Parallel Processing
+	1. Spectre/Advanced Micro Devices, Inc.
+	2. AMD FX-7500 Radeon R7, 10 Compute Cores 4C+6G/AuthenticAMD
+Select device index: 
+Device info
+Platform:       AMD Accelerated Parallel Processing
+Device:         AMD FX-7500 Radeon R7, 10 Compute Cores 4C+6G
+Driver version: 1729.3 (sse2,avx,fma4)
+OpenCL version: OpenCL 1.2 AMD-APP (1729.3)
+Using OpenCL 1.2
+Building kernel with options "-cl-std=CL1.2"
+
+1. Shared memory only kernel
+Executing...Done!
+Output: 4294901760 / Time: 61.6177 msecs (0.00212718 billion elements/second)
+PASSED!
+
+2. Hybrid kernel via subgroup functions
+Subgroups not supported. Skipping kernel 2.
+
+3. Workgroup function kernel
+OpenCL 2.0 is not supported. Skipping kernel 3.
