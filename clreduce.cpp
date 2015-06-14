@@ -57,15 +57,28 @@ void selectPlatformDevice(cl::Platform &platform, cl::Device &device){
 	device = devices[iD-1];
 }
 
-double executeKernel(const cl::CommandQueue &queue, const cl::Kernel &kernel, const cl::NDRange &globalRange, const cl::NDRange &localRange){
-	cl::Event eKernel;
-	std::cout << "Executing...";
-	queue.enqueueNDRangeKernel(kernel, cl::NullRange, globalRange, localRange, NULL, &eKernel);
+void writeBufferData(cl::CommandQueue queue, cl::Buffer buffer, cl_uint value){
+	queue.enqueueFillBuffer<cl_uint>(buffer, value, 0, sizeof(value), NULL, NULL);
 	queue.finish();
+}
+
+double executeKernel(const cl::CommandQueue &queue, cl::Buffer buffer, const cl::Kernel &kernel, const cl::NDRange &globalRange, const cl::NDRange &localRange){
+	const int TOTAL_ITS = 100;
+	double total_time = 0.;
+	std::cout << "Executing...";
+	for(int i=0; i<TOTAL_ITS; i++){
+		cl::Event eKernel;
+		// Initialize result buffer
+		writeBufferData(queue, buffer, 0);
+		// Kernel execution
+		queue.enqueueNDRangeKernel(kernel, cl::NullRange, globalRange, localRange, NULL, &eKernel);
+		queue.finish();
+		auto infStart = eKernel.getProfilingInfo<CL_PROFILING_COMMAND_START>();
+		auto infFinish = eKernel.getProfilingInfo<CL_PROFILING_COMMAND_END>();
+		total_time += (infFinish-infStart)/1000000.;
+	}
 	std::cout << "Done!" << std::endl;
-	auto infStart = eKernel.getProfilingInfo<CL_PROFILING_COMMAND_START>();
-	auto infFinish = eKernel.getProfilingInfo<CL_PROFILING_COMMAND_END>();
-	return (infFinish-infStart)/1000000.0;
+	return total_time/TOTAL_ITS;
 }
 
 cl_uint readBufferData(cl::CommandQueue queue, cl::Buffer buffer){
@@ -73,12 +86,6 @@ cl_uint readBufferData(cl::CommandQueue queue, cl::Buffer buffer){
 	cl_uint result = map[0];
 	queue.enqueueUnmapMemObject(buffer, map);
 	return result;
-}
-
-void writeBufferData(cl::CommandQueue queue, cl::Buffer buffer, cl_uint value){
-	cl_uint *map = (cl_uint*)queue.enqueueMapBuffer(buffer, CL_TRUE, CL_MAP_WRITE, 0, sizeof(cl_uint));
-	map[0] = value;
-	queue.enqueueUnmapMemObject(buffer, map);
 }
 
 void verifyResult(cl_uint result, unsigned int validResult){
@@ -178,13 +185,9 @@ int main(void) {
 
 	// Create kernel and set NDRange size
 	cl::Kernel kernel1(program, "reductionShmem");
-	cl::NDRange globalSize(64*4*256), localSize(256);
+	cl::NDRange globalSize(64*8*256), localSize(256);
 	cl::Buffer buff(context, CL_MEM_WRITE_ONLY, sizeof(cl_uint));
 	cl::Event eKernel;
-
-	//	Initialize result buffer
-	writeBufferData(queue, buff, 0);
-//	std::cout << "NDRange size " << globalSize[0] << std::endl;
 
 	// Precalc correct result
 	unsigned int validResult = globalSize[0]*(globalSize[0]-1)/2;
@@ -195,7 +198,7 @@ int main(void) {
 
 	// Shared memory kernel
 	std::cout << std::endl << "1. Shared memory only kernel" << std::endl;
-	double elapsedTime1 = executeKernel(queue, kernel1, globalSize, localSize);
+	double elapsedTime1 = executeKernel(queue, buff, kernel1, globalSize, localSize);
 
 	// Verify result
 	cl_uint result = readBufferData(queue, buff);
@@ -206,11 +209,10 @@ int main(void) {
 	std::cout << std::endl << "2. Hybrid kernel via subgroup functions" << std::endl;
 	if( cl_subgroups ){
 		cl::Kernel kernel2(program, "reductionSubgrp");
-		writeBufferData(queue, buff, 0);
 
 		kernel2.setArg(0, localSize[0]*sizeof(cl_uint), NULL);
 		kernel2.setArg(1, buff);
-		double elapsedTime2 = executeKernel(queue, kernel2, globalSize, localSize);
+		double elapsedTime2 = executeKernel(queue, buff, kernel2, globalSize, localSize);
 
 		cl_uint result = readBufferData(queue, buff);
 		outputInfo(result, elapsedTime2, globalSize[0]);
@@ -223,10 +225,9 @@ int main(void) {
 	std::cout << std::endl << "3. Workgroup function kernel" << std::endl;
 	if( cl_ver20 ){
 		cl::Kernel kernel3(program, "reductionWkgrp");
-		writeBufferData(queue, buff, 0);
 
 		kernel3.setArg(0, buff);
-		double elapsedTime3 = executeKernel(queue, kernel3, globalSize, localSize);
+		double elapsedTime3 = executeKernel(queue, buff, kernel3, globalSize, localSize);
 
 		cl_uint result = readBufferData(queue, buff);
 		outputInfo(result, elapsedTime3, globalSize[0]);
