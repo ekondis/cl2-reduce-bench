@@ -7,6 +7,10 @@
 #include <string>  
 #include <CL/cl.hpp>
 
+#define WG_SIZE 256
+#define _MAKE_STR(A) #A
+#define MAKE_STR(A) _MAKE_STR(A)
+
 inline std::string trim(std::string str) {
 	str.erase(0, str.find_first_not_of(' '));       //prefixing spaces
 	str.erase(str.find_last_not_of(' ')+1);         //surfixing spaces
@@ -129,12 +133,12 @@ int main(void) {
 	std::cout << "OpenCL version: " << trim(sInfo) << std::endl;
     size_t vStart = sInfo.find(' ', 0), vEnd = sInfo.find('.', 0);
 	int CLMajorVer = std::stoi( sInfo.substr(vStart + 1, vEnd - vStart - 1) ), CLMinorVer = std::stoi( sInfo.substr(vEnd + 1, 1) );
-	std::string cl_version_option;
+	std::string str_cl_parameters("-DWG_SIZE=" MAKE_STR(WG_SIZE) " ");
 	bool cl_subgroups = false, cl_ver20 = false;
 	if( CLMajorVer>=2 ) {
 		std::cout << "Great! OpenCL 2.0 is supported :)" << std::endl;
 		cl_ver20 = true;
-		cl_version_option = "-cl-std=CL2.0 -cl-uniform-work-group-size -DK3";
+		str_cl_parameters += "-cl-std=CL2.0 -cl-uniform-work-group-size -DK3";
 		dev.getInfo(CL_DEVICE_EXTENSIONS, &sInfo);
 		std::string extension;
 		std::stringstream ssInfo(sInfo);
@@ -142,13 +146,13 @@ int main(void) {
 			if( extension=="cl_khr_subgroups" )
 				cl_subgroups = true;
 		if( cl_subgroups )
-			cl_version_option += " -DK2";
+			str_cl_parameters += " -DK2";
 	} else {
 		std::cout << "Using OpenCL 1." << CLMinorVer << std::endl;
-		cl_version_option = "-cl-std=CL1."+std::to_string(CLMinorVer);
+		str_cl_parameters += "-cl-std=CL1."+std::to_string(CLMinorVer);
 	}
 	if( wavefront_size>1 )
-		cl_version_option += " -DWAVEFRONT_SIZE="+std::to_string(wavefront_size);
+		str_cl_parameters += " -DWAVEFRONT_SIZE="+std::to_string(wavefront_size);
 
 	// Create context, queue
 	cl::Context context = cl::Context(VECTOR_CLASS<cl::Device>(1, dev));  
@@ -159,11 +163,11 @@ int main(void) {
 	std::stringstream buffer;
 	buffer << t.rdbuf();
 	std::string src_string = buffer.str();
-	std::cout << "Building kernel with options \"" << cl_version_option << "\"" << std::endl;
+	std::cout << "Building kernel with options \"" << str_cl_parameters << "\"" << std::endl;
 	cl::Program::Sources src(1, std::make_pair(src_string.c_str(), src_string.size()));  
 	cl::Program program(context, src);
 	try {
-		program.build(VECTOR_CLASS<cl::Device>(1, dev), cl_version_option.c_str());
+		program.build(VECTOR_CLASS<cl::Device>(1, dev), str_cl_parameters.c_str());
 	} catch(cl::Error&){
 		std::string buildLog; 
 		program.getBuildInfo(dev, CL_PROGRAM_BUILD_LOG, &buildLog);  
@@ -185,7 +189,7 @@ int main(void) {
 
 	// Create kernel and set NDRange size
 	cl::Kernel kernel1(program, "reductionShmem");
-	cl::NDRange globalSize(64*8*256), localSize(256);
+	cl::NDRange globalSize(64*8*WG_SIZE), localSize(WG_SIZE);
 	cl::Buffer buff(context, CL_MEM_WRITE_ONLY, sizeof(cl_uint));
 	cl::Event eKernel;
 
@@ -216,7 +220,7 @@ int main(void) {
 
 		cl_uint result = readBufferData(queue, buff);
 		outputInfo(result, elapsedTime2, globalSize[0]);
-		std::cout << "Relative speed-up with respect to kernel 1: " << elapsedTime1/elapsedTime2 << std::endl;
+		std::cout << "Relative speed-up with respect to kernel 1: " << elapsedTime1/elapsedTime2 << " (" << elapsedTime2/elapsedTime1 << " times slower)" << std::endl;
 		verifyResult(result, validResult);
 	} else
 		std::cout << "Subgroups not supported. Skipping kernel 2." << std::endl;
@@ -231,7 +235,7 @@ int main(void) {
 
 		cl_uint result = readBufferData(queue, buff);
 		outputInfo(result, elapsedTime3, globalSize[0]);
-		std::cout << "Relative speed-up with respect to kernel 1: " << elapsedTime1/elapsedTime3 << std::endl;
+		std::cout << "Relative speed-up with respect to kernel 1: " << elapsedTime1/elapsedTime3 << " (" << elapsedTime3/elapsedTime1 << " times slower)" << std::endl;
 		verifyResult(result, validResult);
 	} else
 		std::cout << "OpenCL 2.0 is not supported. Skipping kernel 3." << std::endl;

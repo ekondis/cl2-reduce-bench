@@ -2,7 +2,8 @@
 #define WAVEFRONT_SIZE 1  
 #endif
 
-__kernel void reductionShmem(__local volatile uint *localBuffer, __global uint *result/*, const unsigned int n*/) {
+__kernel  __attribute__((reqd_work_group_size(WG_SIZE, 1, 1)))
+void reductionShmem(__local volatile uint *localBuffer, __global uint *result/*, const unsigned int n*/) {
 	const uint id = get_global_id(0);
 	const uint lid = get_local_id(0);
 	const uint group_size = get_local_size(0);
@@ -31,7 +32,8 @@ __kernel void reductionShmem(__local volatile uint *localBuffer, __global uint *
 
 #ifdef K2
 
-__kernel void reductionSubgrp(__local volatile uint *localBuffer, __global uint *result) {
+__kernel  __attribute__((reqd_work_group_size(WG_SIZE, 1, 1)))
+void reductionSubgrp(__local volatile uint *localBuffer, __global uint *result) {
 	const uint id = get_global_id(0);
 	const uint lid = get_local_id(0);
 	const uint group_size = get_local_size(0);
@@ -62,7 +64,8 @@ __kernel void reductionSubgrp(__local volatile uint *localBuffer, __global uint 
 
 #ifdef K3
 
-__kernel void reductionWkgrp(__global uint *result) {
+__kernel  __attribute__((reqd_work_group_size(WG_SIZE, 1, 1)))
+void reductionWkgrp(__global uint *result) {
 	const uint id = get_global_id(0);
 	const uint lid = get_local_id(0);
 
