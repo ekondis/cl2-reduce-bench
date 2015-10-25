@@ -1,0 +1,33 @@
+Workgroup and sub-workgroup OpenCL 2.0 function evaluation test case
+Platform/Device selection
+Total platforms: 2
+1. NVIDIA CUDA
+	1. GeForce GTX 660/NVIDIA Corporation
+2. AMD Accelerated Parallel Processing
+	1. Bonaire/Advanced Micro Devices, Inc.
+	2. Intel(R) Pentium(R) 4 CPU 3.06GHz/GenuineIntel
+Select platform index: Select device index: 
+Device info
+Platform:       AMD Accelerated Parallel Processing
+Device:         Bonaire
+Driver version: 1800.5 (VM)
+OpenCL version: OpenCL 2.0 AMD-APP (1800.5)
+Great! OpenCL 2.0 is supported :)
+Building kernel with options "-DWG_SIZE=256 -cl-std=CL2.0 -cl-uniform-work-group-size -DK3 -DK2 -DWAVEFRONT_SIZE=64"
+
+1. Shared memory only kernel
+Executing...Done!
+Output: 4294901760 / Time: 0.0415022 msecs (3.1582 billion elements/second)
+PASSED!
+
+2. Hybrid kernel via subgroup functions
+Executing...Done!
+Output: 4294901760 / Time: 0.0636696 msecs (2.05863 billion elements/second)
+Relative speed-up with respect to kernel 1: 0.651836 (1.53413 times slower)
+PASSED!
+
+3. Workgroup function kernel
+Executing...Done!
+Output: 4294901760 / Time: 0.168895 msecs (0.776057 billion elements/second)
+Relative speed-up with respect to kernel 1: 0.245728 (4.06954 times slower)
+PASSED!
