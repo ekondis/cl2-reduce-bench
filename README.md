@@ -18,14 +18,23 @@ The first is an OpenCL 1.1 implementation which uses shared memory to perform th
 Example execution
 ---------------
 
-Here are some results of the execution on an AMD R7 260X GPU with 14.12 AMD Catalyst driver on a 64bit Linux system:
+Here are some results of the execution on an AMD A6-1450 APU, using 15.9 AMD Catalyst driver on a 64bit Ubuntu Linux system:
 
 ```
 1. Shared memory only kernel
-Time: 0.089481 msecs (0.732401 billion elements/second)
-2. Hybrid kernel via subgroup functions
-Time: 0.215851 msecs (0.303617 billion elements/second)
-3. Workgroup function kernel
-Time: 0.475408 msecs (0.137852 billion elements/second)
-```
+Executing...Done!
+Output: 4294901760 / Time: 0.13121 msecs (0.998947 billion elements/second)
+PASSED!
 
+2. Hybrid kernel via subgroup functions
+Executing...Done!
+Output: 4294901760 / Time: 0.370266 msecs (0.353994 billion elements/second)
+Relative speed-up with respect to kernel 1: 0.354367 (2.82193 times slower)
+PASSED!
+
+3. Workgroup function kernel
+Executing...Done!
+Output: 4294901760 / Time: 1.44436 msecs (0.0907475 billion elements/second)
+Relative speed-up with respect to kernel 1: 0.0908431 (11.008 times slower)
+PASSED!
+```
