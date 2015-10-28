@@ -1,0 +1,31 @@
+Workgroup and sub-workgroup OpenCL 2.0 function evaluation test case
+Platform/Device selection
+Total platforms: 2
+1. NVIDIA CUDA
+	1. GeForce GTX 960/NVIDIA Corporation
+2. Intel(R) OpenCL
+	1. Intel(R) Core(TM) i5-2500 CPU @ 3.30GHz/Intel(R) Corporation
+Select platform index: 
+Device info
+Platform:       NVIDIA CUDA
+Device:         GeForce GTX 960
+Driver version: 355.11
+OpenCL version: OpenCL 1.2 CUDA
+Using OpenCL 1.2
+Building kernel with options "-DWG_SIZE=256 -cl-std=CL1.2 -DWAVEFRONT_SIZE=32"
+Build log:
+ ******************** 
+
+
+ ******************** 
+
+1. Shared memory only kernel
+Executing...Done!
+Output: 4294901760 / Time: 0.0236416 msecs (5.54413 billion elements/second)
+PASSED!
+
+2. Hybrid kernel via subgroup functions
+Subgroups not supported. Skipping kernel 2.
+
+3. Workgroup function kernel
+OpenCL 2.0 is not supported. Skipping kernel 3.
