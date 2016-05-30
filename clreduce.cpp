@@ -189,7 +189,9 @@ int main(void) {
 
 	// Create kernel and set NDRange size
 	cl::Kernel kernel1(program, "reductionShmem");
-	cl::NDRange globalSize(64*8*WG_SIZE), localSize(WG_SIZE);
+	int MAX_CUs = dev.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>();
+	cl::NDRange globalSize(MAX_CUs*1024*WG_SIZE), localSize(WG_SIZE);
+	std::cout << "Launching NDRange size of " << static_cast<const ::size_t*>(globalSize)[0]/WG_SIZE << " workgroups with " << WG_SIZE << " workitems per workgroup" << std::endl;
 	cl::Buffer buff(context, CL_MEM_WRITE_ONLY, sizeof(cl_uint));
 	cl::Event eKernel;
 
