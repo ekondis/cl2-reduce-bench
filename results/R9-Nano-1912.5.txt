@@ -8,26 +8,26 @@ AMD Accelerated Parallel Processing
 Select device index: 
 Device info
 Platform:       AMD Accelerated Parallel Processing
-Device:         Bonaire
+Device:         Fiji
 Driver version: 1912.5 (VM)
 OpenCL version: OpenCL 2.0 AMD-APP (1912.5)
 Great! OpenCL 2.0 is supported :)
 Building kernel with options "-DWG_SIZE=256 -Werror -cl-std=CL2.0 -cl-uniform-work-group-size -DK3 -DK2 -DWAVEFRONT_SIZE=64"
-Launching NDRange size of 14336 workgroups with 256 workitems per workgroup
+Launching NDRange size of 65536 workgroups with 256 workitems per workgroup
 
 1. Shared memory only kernel
 Executing...Done!
-Output: 4293132288 / Time: 0.279111 msecs (13.1489 billion elements/second)
+Output: 4286578688 / Time: 0.29253 msecs (57.3522 billion elements/second)
 PASSED!
 
 2. Hybrid kernel via subgroup functions
 Executing...Done!
-Output: 4293132288 / Time: 0.52687 msecs (6.9657 billion elements/second)
-Relative speed-up with respect to kernel 1: 0.529754 (1.88767 times slower)
+Output: 4286578688 / Time: 0.267022 msecs (62.8307 billion elements/second)
+Relative speed-up with respect to kernel 1: 1.09552 (0.912805 times slower)
 PASSED!
 
 3. Workgroup function kernel
 Executing...Done!
-Output: 4293132288 / Time: 2.0538 msecs (1.78694 billion elements/second)
-Relative speed-up with respect to kernel 1: 0.1359 (7.35837 times slower)
+Output: 4286578688 / Time: 0.40412 msecs (41.5154 billion elements/second)
+Relative speed-up with respect to kernel 1: 0.723868 (1.38147 times slower)
 PASSED!
