@@ -1,0 +1,35 @@
+Workgroup and sub-workgroup OpenCL 2.0 function evaluation test case
+Platform/Device selection
+Total platforms: 2
+1. Intel(R) OpenCL
+	1. Intel(R) HD Graphics 530/Intel(R) Corporation
+	2. Intel(R) Core(TM) i5-6600K CPU @ 3.50GHz/Intel(R) Corporation
+2. AMD Accelerated Parallel Processing
+	1. Fiji/Advanced Micro Devices, Inc.
+	2. Intel(R) Core(TM) i5-6600K CPU @ 3.50GHz/GenuineIntel
+Select platform index: Select device index: 
+Device info
+Platform:       AMD Accelerated Parallel Processing
+Device:         Fiji
+Driver version: 2079.4 (VM)
+OpenCL version: OpenCL 2.0 AMD-APP (2079.4)
+Great! OpenCL 2.0 is supported :)
+Building kernel with options "-DWG_SIZE=256 -Werror -cl-std=CL2.0 -cl-uniform-work-group-size -DK3 -DK2 -DWAVEFRONT_SIZE=64"
+Launching NDRange size of 65536 workgroups with 256 workitems per workgroup
+
+1. Shared memory only kernel
+Executing...Done!
+Output: 4286578688 / Time: 0.266243 msecs (63.0146 billion elements/second)
+PASSED!
+
+2. Hybrid kernel via subgroup functions
+Executing...Done!
+Output: 4286578688 / Time: 0.264346 msecs (63.467 billion elements/second)
+Relative speed-up with respect to kernel 1: 1.00718 (0.992873 times slower)
+PASSED!
+
+3. Workgroup function kernel
+Executing...Done!
+Output: 4286578688 / Time: 0.401376 msecs (41.7993 billion elements/second)
+Relative speed-up with respect to kernel 1: 0.663326 (1.50755 times slower)
+PASSED!
