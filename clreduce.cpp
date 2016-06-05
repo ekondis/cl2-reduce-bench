@@ -143,7 +143,7 @@ int main(void) {
 		std::string extension;
 		std::stringstream ssInfo(sInfo);
 		while( ssInfo >> extension )
-			if( extension=="cl_khr_subgroups" )
+			if( extension=="cl_khr_subgroups" || extension=="cl_intel_subgroups" )
 				cl_subgroups = true;
 		if( cl_subgroups )
 			str_cl_parameters += " -DK2";
