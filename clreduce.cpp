@@ -129,9 +129,10 @@ int main(void) {
 	dev.getInfo(CL_DRIVER_VERSION, &sInfo);
 	std::cout << "Driver version: " << trim(sInfo) << std::endl;
 
-	dev.getInfo(CL_DEVICE_VERSION, &sInfo);
-	std::cout << "OpenCL version: " << trim(sInfo) << std::endl;
-    size_t vStart = sInfo.find(' ', 0), vEnd = sInfo.find('.', 0);
+	dev.getInfo(CL_DEVICE_OPENCL_C_VERSION, &sInfo);
+	std::cout << "OpenCL C version: " << trim(sInfo) << std::endl;
+	size_t vEnd = sInfo.find('.', 0);
+	size_t vStart = sInfo.rfind(' ', vEnd);
 	int CLMajorVer = std::stoi( sInfo.substr(vStart + 1, vEnd - vStart - 1) ), CLMinorVer = std::stoi( sInfo.substr(vEnd + 1, 1) );
 	std::string str_cl_parameters("-DWG_SIZE=" MAKE_STR(WG_SIZE) " -Werror ");
 	bool cl_subgroups = false, cl_ver20 = false;
