@@ -103,6 +103,21 @@ void outputInfo(unsigned int result, double elapsedTime, int workitems){
 	std::cout << "Output: " << result << " / Time: " << elapsedTime << " msecs (" << (workitems/elapsedTime/1000000.0) << " billion elements/second)" << std::endl;
 }
 
+void try_build_program(cl::Program program, cl::Device dev, const std::string &str_cl_parameters){
+	std::cout << "Building kernel with options \"" << str_cl_parameters << "\"" << std::endl;
+	try {
+		program.build(VECTOR_CLASS<cl::Device>(1, dev), str_cl_parameters.c_str());
+	} catch(cl::Error&){
+		std::string buildLog; 
+		program.getBuildInfo(dev, CL_PROGRAM_BUILD_LOG, &buildLog);  
+		std::cout << "Build log:" << std::endl  
+			<< " ******************** " << std::endl  
+			<< buildLog << std::endl  
+			<< " ******************** " << std::endl;
+		throw;
+	}
+}
+
 int main(void) {  
 	std::cout << "Workgroup and sub-workgroup OpenCL 2.0 function evaluation test case" << std::endl;
 	cl::Platform pl;
@@ -113,16 +128,9 @@ int main(void) {
 	dev.getInfo(CL_DEVICE_TYPE, &devType);
 
 	std::cout << std::endl << "Device info"<< std::endl;
-	int wavefront_size=1;
 	std::string sInfo;
 	pl.getInfo(CL_PLATFORM_NAME, &sInfo);
 	std::cout << "Platform:       " << trim(sInfo) << std::endl;
-	if( devType==CL_DEVICE_TYPE_GPU ){
-		if( sInfo.find("AMD") != std::string::npos )
-			wavefront_size = 64;
-		if( sInfo.find("NVIDIA") != std::string::npos )
-			wavefront_size = 32;
-	}
 
 	dev.getInfo(CL_DEVICE_NAME, &sInfo);  
 	std::cout << "Device:         " << trim(sInfo) << std::endl;
@@ -152,8 +160,6 @@ int main(void) {
 		std::cout << "Using OpenCL 1." << CLMinorVer << std::endl;
 		str_cl_parameters += "-cl-std=CL1."+std::to_string(CLMinorVer);
 	}
-	if( wavefront_size>1 )
-		str_cl_parameters += " -DWAVEFRONT_SIZE="+std::to_string(wavefront_size);
 
 	// Create context, queue
 	cl::Context context = cl::Context(VECTOR_CLASS<cl::Device>(1, dev));  
@@ -164,19 +170,22 @@ int main(void) {
 	std::stringstream buffer;
 	buffer << t.rdbuf();
 	std::string src_string = buffer.str();
-	std::cout << "Building kernel with options \"" << str_cl_parameters << "\"" << std::endl;
 	cl::Program::Sources src(1, std::make_pair(src_string.c_str(), src_string.size()));  
 	cl::Program program(context, src);
-	try {
-		program.build(VECTOR_CLASS<cl::Device>(1, dev), str_cl_parameters.c_str());
-	} catch(cl::Error&){
-		std::string buildLog; 
-		program.getBuildInfo(dev, CL_PROGRAM_BUILD_LOG, &buildLog);  
-		std::cout << "Build log:" << std::endl  
-			<< " ******************** " << std::endl  
-			<< buildLog << std::endl  
-			<< " ******************** " << std::endl;
-		throw;
+
+	try_build_program(program, dev, str_cl_parameters);
+	size_t wavefront_size_old = 0, wavefront_size = 1;
+	while(wavefront_size_old != wavefront_size) {
+		wavefront_size_old = wavefront_size;
+		cl::Kernel k(program, "reductionShmem");
+		k.getWorkGroupInfo(dev, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, &wavefront_size);
+
+		if( wavefront_size_old!=wavefront_size ) {
+			std::cout << "Warp/Wavefront size determined: " << wavefront_size << std::endl;
+			std::string str_cl_parameters_wavefront(str_cl_parameters);
+			str_cl_parameters_wavefront += " -DWAVEFRONT_SIZE="+std::to_string(wavefront_size);
+			try_build_program(program, dev, str_cl_parameters_wavefront);
+		}
 	}
 
 	// Print built log if not empty
