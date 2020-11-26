@@ -184,6 +184,7 @@ int main(void) {
 			std::cout << "Warp/Wavefront size determined: " << wavefront_size << std::endl;
 			std::string str_cl_parameters_wavefront(str_cl_parameters);
 			str_cl_parameters_wavefront += " -DWAVEFRONT_SIZE="+std::to_string(wavefront_size);
+			program = cl::Program{context, src}; // recreate program as some platforms throw exception after calling build twice
 			try_build_program(program, dev, str_cl_parameters_wavefront);
 		}
 	}
